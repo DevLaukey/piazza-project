@@ -1,18 +1,17 @@
-const axios = require("axios").default;
+const axios = require("axios");
 
 const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
 var authConfig = {
-  method: "GET",
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
+  headers: { "content-type": "application/x-www-form-urlencoded" },
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
-    client_secret:
-      "FyAX8goTiMu7qz8b9MSqbgi22gLji_IdUPR5zU8NOATCDW6zcaZg67QNGACz4uqS",
-    audience: "https://dev-fb3fqap2.us.auth0.com/api/v2/",
+    client_secret: "YOUR_CLIENT_SECRET",
+    audience: "YOUR_API_IDENTIFIER",
   }),
 };
 
@@ -47,14 +46,20 @@ const registerUser = async (req, res) => {
     }
 
     // Register user in Auth0
-    await axios
-      .request(authConfig)
-      .then(function (response) {
-        console.log(response.data);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    await axios.post(
+      `${authConfig.issuerBaseURL}/users`,
+      {
+        email: username,
+        password,
+        connection: "Username-Password-Authentication",
+      },
+      {
+        headers: {
+          Authorization: `Bearer: ${await getAuth0AccessToken()}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     res.json({ message: "User registered successfully" });
   } catch (err) {

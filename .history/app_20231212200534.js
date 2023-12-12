@@ -20,9 +20,6 @@ mongoose.connection.on(
   console.error.bind(console, "MongoDB connection error:")
 );
 
-app.get("/", (req, res) => { 
-  res.send("Hello World!");
-});
 app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
 

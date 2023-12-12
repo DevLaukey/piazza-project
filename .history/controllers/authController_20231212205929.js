@@ -4,9 +4,9 @@ const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
 var authConfig = {
-  method: "GET",
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
+  headers: { "content-type": "application/x-www-form-urlencoded" },
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
@@ -48,7 +48,7 @@ const registerUser = async (req, res) => {
 
     // Register user in Auth0
     await axios
-      .request(authConfig)
+      .request(options)
       .then(function (response) {
         console.log(response.data);
       })

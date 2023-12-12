@@ -4,9 +4,9 @@ const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
 var authConfig = {
-  method: "GET",
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
@@ -27,12 +27,12 @@ const registerUser = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User already exists" });
-    }
+    // const existingUser = await User.findOne({ username });
+    // if (existingUser) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "User already exists" });
+    // }
 
     // Create user in your MongoDB (or any other database)
     const newUser = new User({ username, password });

@@ -4,9 +4,9 @@ const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
 var authConfig = {
-  method: "GET",
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
+  headers: { "content-type": "application/x-www-form-urlencoded" },
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",

@@ -1,18 +1,17 @@
-const axios = require("axios").default;
+const axios = require("axios");
 
 const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
-var authConfig = {
-  method: "GET",
+var options = {
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
+  headers: { "content-type": "application/x-www-form-urlencoded" },
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
-    client_secret:
-      "FyAX8goTiMu7qz8b9MSqbgi22gLji_IdUPR5zU8NOATCDW6zcaZg67QNGACz4uqS",
-    audience: "https://dev-fb3fqap2.us.auth0.com/api/v2/",
+    client_secret: "YOUR_CLIENT_SECRET",
+    audience: "YOUR_API_IDENTIFIER",
   }),
 };
 
@@ -31,7 +30,7 @@ const registerUser = async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ message: "User already exists" });
+        .json({ message: "Bad Request - User already exists" });
     }
 
     // Create user in your MongoDB (or any other database)
@@ -47,14 +46,20 @@ const registerUser = async (req, res) => {
     }
 
     // Register user in Auth0
-    await axios
-      .request(authConfig)
-      .then(function (response) {
-        console.log(response.data);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    await axios.post(
+      `${authConfig.issuerBaseURL}/users`,
+      {
+        email: username,
+        password,
+        connection: "Username-Password-Authentication",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${await getAuth0AccessToken()}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     res.json({ message: "User registered successfully" });
   } catch (err) {
@@ -97,14 +102,32 @@ const loginUser = async (req, res) => {
 
 // Helper function to get Auth0 access token
 const getAuth0AccessToken = async () => {
-  const response = await axios
-    .request(authConfig)
-    .then(function (response) {
-      console.log(response?.data);
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
+  const response = await axios.post(
+    `https://${authConfig.domain}/oauth/token`,
+    {
+      grant_type: "client_credentials",
+      client_id: authConfig.clientID,
+      client_secret: authConfig.secret,
+      audience: authConfig.aud,
+    }
+  );
+
+  return response.data.access_token;
+};
+
+// Helper function to get Auth0 user token
+const getAuth0UserToken = async (username, password) => {
+  const response = await axios.post(
+    `https://${authConfig.domain}/oauth/token`,
+    {
+      grant_type: "password",
+      client_id: authConfig.clientId,
+      client_secret: authConfig.clientSecret,
+      audience: authConfig.audience,
+      username,
+      password,
+    }
+  );
 
   return response.data.access_token;
 };

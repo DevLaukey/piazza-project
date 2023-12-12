@@ -8,7 +8,6 @@ const dotenv = require("dotenv").config();
 
 const PORT = 3000;
 
-const app = express()
 app.use(bodyParser.json());
 
 mongoose.connect("mongodb://localhost/piazza", {
@@ -20,9 +19,6 @@ mongoose.connection.on(
   console.error.bind(console, "MongoDB connection error:")
 );
 
-app.get("/", (req, res) => { 
-  res.send("Hello World!");
-});
 app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
 

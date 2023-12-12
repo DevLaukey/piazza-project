@@ -4,18 +4,17 @@ const User = require("../models/userModel");
 const { createToken } = require("../utils/auth");
 
 var authConfig = {
-  method: "GET",
+  method: "POST",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
-  data: new URLSearchParams({
-    grant_type: "client_credentials",
-    client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
-    client_secret:
-      "FyAX8goTiMu7qz8b9MSqbgi22gLji_IdUPR5zU8NOATCDW6zcaZg67QNGACz4uqS",
-    audience: "https://dev-fb3fqap2.us.auth0.com/api/v2/",
-  }),
+  headers: { "content-type": "application/x-www-form-urlencoded" },
+  form: {
+    grant_type: "authorization_code",
+    client_id: "x5Phd8R92bgg1yVMLGQ3azXMu7jLDXqD",
+    client_secret: "YOUR_CLIENT_SECRET",
+    code: "AUTHORIZATION_CODE",
+    redirect_uri: "{https://yourApp/callback}",
+  },
 };
-
 const registerUser = async (req, res) => {
   try {
     const { username, password } = req.body;
