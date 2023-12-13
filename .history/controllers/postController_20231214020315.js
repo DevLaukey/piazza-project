@@ -42,111 +42,44 @@ const browseMessagesByTopic = async (req, res) => {
 };
 
 // Action 4: Registered users perform basic operations (like, dislike, comment)
-const likePost = async (postId, user, timeLeft, otherInfo) => {
-  try {
-    const post = await Post.findById(postId);
-    if (!post) {
-      throw new Error("Post not found");
-    }
-
-    // Add interaction data
-    post.likes += 1;
-    post.interactions.push({
-      user,
-      type: "like",
-      timeLeft,
-      otherInfo,
-    });
-
-    await post.save();
-    return post;
-  } catch (error) {
-    throw new Error("Error liking post");
-  }
-};
-
-const dislikePost = async (postId, user, timeLeft, otherInfo) => {
-  try {
-    const post = await Post.findById(postId);
-    if (!post) {
-      throw new Error("Post not found");
-    }
-
-    // Add interaction data
-    post.dislikes += 1;
-    post.interactions.push({
-      user,
-      type: "dislike",
-      timeLeft,
-      otherInfo,
-    });
-
-    await post.save();
-    return post;
-  } catch (error) {
-    throw new Error("Error disliking post");
-  }
-};
-
-const commentOnPost = async (
-  postId,
-  user,
-  interactionValue,
-  timeLeft,
-  otherInfo
-) => {
-  try {
-    const post = await Post.findById(postId);
-    if (!post) {
-      throw new Error("Post not found");
-    }
-
-    // Add interaction data
-    post.comments.push({
-      user,
-      content: interactionValue,
-      timeLeft,
-      otherInfo,
-    });
-
-    await post.save();
-    return post;
-  } catch (error) {
-    throw new Error("Error commenting on post");
-  }
-};
-
+// Action 4: Registered users perform basic operations (like, dislike, comment)
 const interactWithPost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { user, interactionType, interactionValue, timeLeft, otherInfo } =
-      req.body;
+    const { user, interactionType, interactionValue, timeLeft, otherInfo } = req.body;
 
-    let post;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Perform the interaction (like, dislike, or comment)
     switch (interactionType) {
-      case "like":
-        post = await likePost(postId, user, timeLeft, otherInfo);
+      case 'like':
+        post.likes += 1;
         break;
-      case "dislike":
-        post = await dislikePost(postId, user, timeLeft, otherInfo);
+      case 'dislike':
+        post.dislikes += 1;
         break;
-      case "comment":
-        post = await commentOnPost(
-          postId,
+      case 'comment':
+        post.comments.push({
           user,
-          interactionValue,
+          content: interactionValue,
           timeLeft,
-          otherInfo
-        );
+          otherInfo,
+        });
         break;
       default:
-        return res.status(400).json({ error: "Invalid interaction type" });
+        return res.status(400).json({ error: 'Invalid interaction type' });
     }
+
+    // Save the updated post to the database
+    await post.save();
 
     res.json({ success: true, post });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
+  postId: { type: Int16Array, unique: true , autoIncrement: true},
   title: String,
   topic: { type: String, enum: ["Politics", "Health", "Sport", "Tech"] },
   timestamp: { type: Date, default: Date.now },
