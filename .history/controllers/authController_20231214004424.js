@@ -6,10 +6,7 @@ const { createToken } = require("../utils/auth");
 var authConfig = {
   method: "GET",
   url: "https://dev-fb3fqap2.us.auth0.com/oauth/token",
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-    Authorization: "Bearer",
-  },
+  headers: { "Content-Type": "application/x-www-form-urlencoded" , "Authorization": "Bearer"},
   data: new URLSearchParams({
     grant_type: "client_credentials",
     client_id: "vfrYORSozWqdGpJZEWjqCMnBNbMLEhtX",
@@ -42,14 +39,14 @@ const registerUser = async (req, res) => {
 
     // Create token
     const token = jwt.sign(
-      { user_id: newUser._id, username },
+      { user_id: user._id, email },
       process.env.TOKEN_KEY,
       {
         expiresIn: "2h",
       }
     );
     // save user token
-    newUser.token = token;
+    user.token = token;
 
     try {
       await newUser.save();
@@ -60,7 +57,17 @@ const registerUser = async (req, res) => {
         .json({ message: "Internal Server Error - User creation failed" });
     }
 
-    res.status(200).json(newUser);
+    // Register user in Auth0
+    await axios
+      .request(authConfig)
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+
+    res.json({ message: "User registered successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });
@@ -72,34 +79,30 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: "Missing username or password" });
+      return res
+        .status(400)
+        .json({ message: "Bad Request - Missing username or password" });
     }
 
     // Validate user in your MongoDB (or any other database)
     const user = await User.findOne({ username, password });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - Invalid credentials" });
     }
-    if (user && (await bcrypt.compare(password, user.password))) {
-      // Create token
-      const token = jwt.sign(
-        { user_id: user._id, username },
-        process.env.TOKEN_KEY,
-        {
-          expiresIn: "2h",
-        }
-      );
 
-      // save user token
-      user.token = token;
+    // Get Auth0 token for the user
+    const auth0Token = await getAuth0UserToken(username, password);
 
-      // user
-      res.status(200).json(user);
-    }
+    // Generate a JWT token
+    const token = createToken(user);
+
+    res.json({ token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
