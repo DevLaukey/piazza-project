@@ -19,13 +19,9 @@ module.exports = {
         return res.status(400).json({ message: "User already exists" });
       }
 
-      //Encrypt user password
-      const encryptedPassword = await bcrypt.hash(password, 10);
+      
 
-      const newUser = await User.create({
-        username,
-        password: encryptedPassword,
-      });
+      const newUser = await User.create({ username, password });
 
       // Create token
       const token = jwt.sign(
@@ -35,7 +31,7 @@ module.exports = {
           expiresIn: "2h",
         }
       );
-      // save user token
+      // save user token  
       newUser.token = token;
 
       try {

@@ -1,9 +1,11 @@
 const express = require("express");
-const postController = require("../controllers/postController");
+const authController = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// router.post("/create", authMiddleware.verifyToken, postController.createPost);
+router.post("/register", (req, res) =>{
+res.send("Welcome")});
+
 
 module.exports = router;

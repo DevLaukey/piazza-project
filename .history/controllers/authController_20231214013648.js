@@ -22,10 +22,7 @@ module.exports = {
       //Encrypt user password
       const encryptedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await User.create({
-        username,
-        password: encryptedPassword,
-      });
+      const newUser = new User({ username, encryptedPassword });
 
       // Create token
       const token = jwt.sign(
@@ -69,8 +66,6 @@ module.exports = {
       if (!user) {
         return res.status(401).json({ message: "User does not exist" });
       }
-
-      console.log(user);
       if (user && bcrypt.compare(password, user.password)) {
         // Create token
         const token = jwt.sign(

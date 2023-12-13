@@ -22,10 +22,7 @@ module.exports = {
       //Encrypt user password
       const encryptedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await User.create({
-        username,
-        password: encryptedPassword,
-      });
+      const newUser = await User.create({ username, password:encryptedPassword });
 
       // Create token
       const token = jwt.sign(
@@ -35,7 +32,7 @@ module.exports = {
           expiresIn: "2h",
         }
       );
-      // save user token
+      // save user token  
       newUser.token = token;
 
       try {
