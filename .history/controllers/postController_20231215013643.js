@@ -43,7 +43,6 @@ const browseMessagesByTopic = async (req, res) => {
 
 
 
-// Action 4: Registered users perform basic operations (like, dislike, comment)
 const interactWithPost = async (req, res) => {
   try {
     const { postId } = req.params;
