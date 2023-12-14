@@ -139,7 +139,7 @@ const interactWithPost = async (req, res) => {
         post.dislikes += 1;
         break;
       case "comment":
-        post.comments = interactionValue;
+        post.comments.push(interactionValue);
         break;
       default:
         return res.status(400).json({ error: "Invalid interaction type" });
