@@ -57,14 +57,13 @@ const likePost = async (postId, user, timeLeft, otherInfo) => {
     post.interactions.push({
       user,
       type: "like",
-      timeLeft,
-      otherInfo,
+     
     });
 
     await post.save();
     return post;
   } catch (error) {
-    console.log("Error liking post", error.message);
+    throw new Error("Error liking post");
   }
 };
 
@@ -125,36 +124,26 @@ const interactWithPost = async (req, res) => {
     const { user, interactionType, interactionValue, timeLeft, otherInfo } =
       req.body;
 
-    let post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
-
-    // Perform the interaction (like, dislike, or comment)
+    let post;
     switch (interactionType) {
       case "like":
-        post.likes += 1;
+        post = await likePost(postId, user, timeLeft, otherInfo);
         break;
       case "dislike":
-        post.dislikes += 1;
+        post = await dislikePost(postId, user, timeLeft, otherInfo);
         break;
       case "comment":
-        post.comments.push(interactionValue);
+        post = await commentOnPost(
+          postId,
+          user,
+          interactionValue,
+          timeLeft,
+          otherInfo
+        );
         break;
       default:
         return res.status(400).json({ error: "Invalid interaction type" });
     }
-
-    // Add interaction data to the interactions array
-    post.interactions.push({
-      user,
-      value: interactionType,
-      timeLeft,
-      otherInfo,
-    });
-
-    // Save the updated post to the database
-    post = await post.save();
 
     res.json({ success: true, post });
   } catch (error) {
@@ -170,7 +159,7 @@ const mostActivePostPerTopic = async (req, res) => {
     const { topic } = req.params;
     await Post.findOne({ topic })
       .sort({ likes: -1, dislikes: 1 })
-      .then((mostActivePost) => {
+      .then(() => {
         res.json(mostActivePost);
       })
       .catch((error) => {

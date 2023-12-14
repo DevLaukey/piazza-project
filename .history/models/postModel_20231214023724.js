@@ -7,13 +7,6 @@ const counterSchema = new mongoose.Schema({
 
 const Counter = mongoose.model("Counter", counterSchema);
 
-const interactionSchema = new mongoose.Schema({
-  user: String,
-  value: { type: String, enum: ["like", "dislike", "comment"] },
-  timeLeft: String,
-  otherInfo: String,
-});
-
 const postSchema = new mongoose.Schema({
   postId: { type: Number, unique: true },
   title: String,
@@ -26,7 +19,6 @@ const postSchema = new mongoose.Schema({
   likes: { type: Number, default: 0 },
   dislikes: { type: Number, default: 0 },
   comments: [String],
-  interactions: [interactionSchema], // Array to store interactions
 });
 
 postSchema.pre("save", async function (next) {
