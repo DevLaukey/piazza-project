@@ -37,22 +37,40 @@ const browseMessagesByTopic = async (req, res) => {
     const posts = await Post.find({ topic }).sort({ timestamp: -1 });
 
     // Populate likes, dislikes, and comments for each post
-    const populatedPosts = posts.map(post => {
-      return {
-        postId: post.postId,
-        title: post.title,
-        topic: post.topic,
-        timestamp: post.timestamp,
-        body: post.body,
-        expirationTime: post.expirationTime,
-        status: post.status,
-        owner: post.owner,
-        likes: post.likes,
-        dislikes: post.dislikes,
-        comments: post.comments,  // Assuming comments are directly embedded in the Post model
-        interactions: post.interactions,
-      };
-    });
+    const populatedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const likes = post.likes;
+        const dislikes = post.dislikes;
+        
+        // Populate comments with user, content, timeLeft, and otherInfo
+        const populatedComments = await Promise.all(
+          post.comments.map(async (commentId) => {
+            const comment = await Comment.findById(commentId);
+            return {
+              user: comment.user,
+              content: comment.content,
+              timeLeft: comment.timeLeft,
+              otherInfo: comment.otherInfo,
+            };
+          })
+        );
+
+        return {
+          postId: post.postId,
+          title: post.title,
+          topic: post.topic,
+          timestamp: post.timestamp,
+          body: post.body,
+          expirationTime: post.expirationTime,
+          status: post.status,
+          owner: post.owner,
+          likes,
+          dislikes,
+          comments: populatedComments,
+          interactions: post.interactions,
+        };
+      })
+    );
 
     res.json(populatedPosts);
   } catch (error) {
@@ -63,11 +81,11 @@ const browseMessagesByTopic = async (req, res) => {
 
 
 // Action 4: Registered users perform basic operations (like, dislike, comment)
-// Action 4: Registered users perform basic operations (like, dislike, comment)
 const interactWithPost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { user, interactionType, interactionValue, timeLeft, otherInfo } = req.body;
+    const { user, interactionType, interactionValue, timeLeft, otherInfo } =
+      req.body;
 
     let post = await Post.findById(postId);
     if (!post) {
@@ -76,21 +94,18 @@ const interactWithPost = async (req, res) => {
 
     // Check if the post has expired
     if (post.expirationTime && new Date(post.expirationTime) < new Date()) {
-      return res.status(400).json({ error: "Post has expired, and no further interactions are allowed." });
+      return res
+        .status(400)
+        .json({
+          error: "Post has expired and no further interactions are allowed.",
+        });
     }
 
     // Check if the user is the owner of the post
     if (post.owner === user) {
-      return res.status(400).json({ error: "Post owner cannot interact with their own messages." });
-    }
-
-    // Check if the timeLeft is over
-    if (timeLeft <= 0) {
-      // Update post status to "Expired"
-      post.status = "Expired";
-      await post.save();
-
-      return res.status(400).json({ error: "Post has expired, and no further interactions are allowed." });
+      return res
+        .status(400)
+        .json({ error: "Post owner cannot interact with their own messages." });
     }
 
     // Perform the interaction (like, dislike, or comment)
