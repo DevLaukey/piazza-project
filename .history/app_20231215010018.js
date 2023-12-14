@@ -21,7 +21,7 @@ mongoose.connection.on(
   console.error.bind(console, "MongoDB connection error:")
 );
 
-app.post("/", verifyToken,(req, res) => { 
+app.get("/", verifyToken,(req, res) => { 
   res.send("You are allowed to be here");
 });
 app.use("/auth", authRoutes);
