@@ -12,10 +12,13 @@ const PORT = 3000;
 const app = express()
 app.use(bodyParser.json());
 
-mongoose.connect("mongodb://localhost/piazza", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(
+  "mongodb+srv://voyage105:Plt3416.@cluster0.dqylwlg.mongodb.net/?retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 mongoose.connection.on(
   "error",
   console.error.bind(console, "MongoDB connection error:")
