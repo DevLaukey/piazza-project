@@ -12,7 +12,7 @@ const PORT = 3000;
 const app = express()
 app.use(bodyParser.json());
 
-mongoose.connect("mongodb://localhost/piazza", {
+mongoose.connect("mongodb://104.154.209.72/piazza", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
